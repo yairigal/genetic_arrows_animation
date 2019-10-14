@@ -11,12 +11,14 @@ generation = 0
 # genetic alg parameters
 population_size = 1000
 direction_amount = 300
-mutation_rate = 0.05
-selection_percentage = 0.1
+mutation_rate = 0.01
+selection_percentage = 0.01
 
-starting_poing = 0, 100
-target = [0, -h / 2 + 20]
-obstacles = [(-w/2, -50, 50, -50), (-50, -200, w/2, -200)]
+starting_poing = 0, 200
+target = [(-30, -h / 2 + 20), (30, -h / 2 + 20)]
+obstacles = [(-w/2, 100, 50, 100),
+             (-50, -50, w/2, -50),
+             (-w/2, -200, 50, -200)]
 
 
 def setup():
@@ -39,7 +41,8 @@ def is_generation_over():
 def crossover(father, mother):
     global population, direction_amount
 
-    son = Arrow(*starting_poing, obstacles=obstacles,target=target, length=direction_amount)
+    son = Arrow(*starting_poing, obstacles=obstacles,
+                target=target, length=direction_amount)
     son.directions = father.directions[:direction_amount /
                                        2] + mother.directions[direction_amount / 2:]
     return son
@@ -54,7 +57,8 @@ def draw():
     with new_draw():
         strokeWeight(10)
         stroke(255, 0, 0)
-        point(*target)
+        (a, b), (c, d) = target
+        line(a, b, c, d)
 
     # draw obstacle
     for obs in obstacles:
@@ -108,7 +112,7 @@ def draw():
         for arrrow in population:
             for i in range(direction_amount):
                 if random.random() <= mutation_rate:
-                    arrrow.directions[i] = random.uniform(0, 2 * pi)
+                    arrrow.directions[i] = random.uniform(-pi/4, pi/4)
 
         # reset arrows
         for arrow in population:

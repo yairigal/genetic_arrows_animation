@@ -39,14 +39,14 @@ class Arrow:
         self.target = target
         self.reset()
         self.speed = 20
-        self.directions = [random.uniform(0 , 2 * pi)
+        self.directions = [random.uniform(-pi/4 , pi/4)
                            for _ in range(length)]
 
     def _change_direction(self, angle):
         """angle in radians."""
-        # self.current_angle += angle
-        x = -(self.r * cos(angle))
-        y = -(self.r * sin(angle))
+        self.current_angle += angle
+        x = -(self.r * cos(self.current_angle))
+        y = -(self.r * sin(self.current_angle))
 
         self.end_point[0] = x + self.starting_point[0]
         self.end_point[1] = y + self.starting_point[1]
@@ -56,7 +56,7 @@ class Arrow:
         return x < - w / 2 or x > w / 2 or y > h / 2 or y < -h / 2
 
     def achieved_target(self):
-        return self.end_point == list(self.target)
+        return line_intersection([self.starting_point,self.end_point], self.target)
 
     def collision_with_obstacles(self):
         for obs in self.obstacles:
@@ -81,7 +81,7 @@ class Arrow:
         # reset fitness
         self.fitness = 0
 
-        # self.current_angle = (pi * 3 / 2) + (pi / 4)
+        self.current_angle = (pi * 3 / 2) + (pi / 4)
 
 
     def m(self):
@@ -137,6 +137,10 @@ class Arrow:
             strokeWeight(3)
             if self.is_dead():
                 stroke(0, 0, 255)
+            
+            if self.achieved_target():
+                stroke(0,255,0)
+
             line(x, y, x_end, y_end)
 
         # # lower point
@@ -152,8 +156,10 @@ class Arrow:
             point(*self.end_point)
 
     def calculate_fitness(self):
-        max_distance = dist(self.start_coordinates, self.target)
-        dist_to_target = dist(self.end_point, self.target)
+        (x0,y0), (x1,y1) = self.target
+        mid_point = (x0 + x1) / 2, (y0 + y1) / 2 # middle point in target
+        max_distance = dist(self.start_coordinates, mid_point)
+        dist_to_target = dist(self.end_point, mid_point)
         dist_ratio = max_distance / dist_to_target  # 0 - max_distance
 
         self.fitness = 2 ** (dist_ratio)
