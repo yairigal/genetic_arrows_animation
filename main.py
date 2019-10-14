@@ -2,38 +2,36 @@
 from logic import Arrow
 from math import pi
 import random
+from common import w, h, new_draw
 
-w, h = 700, 700
 
-
-global counter, direction, population, direction_amount
 counter = 1
 generation = 0
 
 # genetic alg parameters
 population_size = 1000
-direction_amount = 30
-mutation_rate = 0.01
+direction_amount = 300
+mutation_rate = 0.05
 selection_percentage = 0.1
 
-starting_poing = 0, 0
-target = 0, -h / 2 + 20
+starting_poing = 0, 100
+target = [0, -h / 2 + 20]
+obstacles = [(-w/2, -50, 50, -50), (-50, -200, w/2, -200)]
 
 
 def setup():
     global population
     size(w, h)
+    frameRate(60)
 
-    frameRate(30)
-
-    population = [Arrow(0, 0, direction_amount) for _ in range(population_size)]
-
+    population = [Arrow(*starting_poing, obstacles=obstacles, target=target, length=direction_amount)
+                  for _ in range(population_size)]
 
 
 def is_generation_over():
     global population
 
-    finished = all(arrow.is_dead((w, h), target) for arrow in population)
+    finished = all(arrow.is_dead() for arrow in population)
 
     return finished
 
@@ -41,26 +39,37 @@ def is_generation_over():
 def crossover(father, mother):
     global population, direction_amount
 
-    son = Arrow(0, 0, direction_amount)
-    son.directions = father.directions[:direction_amount / 2] + mother.directions[direction_amount / 2:]
+    son = Arrow(*starting_poing, obstacles=obstacles,target=target, length=direction_amount)
+    son.directions = father.directions[:direction_amount /
+                                       2] + mother.directions[direction_amount / 2:]
     return son
 
+
 def draw():
-    global counter, direction_amount, population_size, selection_percentage, generation, population
+    global obstacles, counter, direction_amount, population_size, selection_percentage, generation, population
     background(255)
     translate(w / 2, h / 2)
 
     # draw point
-    strokeWeight(5)
-    stroke(0, 255, 0)
-    point(*target)
+    with new_draw():
+        strokeWeight(10)
+        stroke(255, 0, 0)
+        point(*target)
+
+    # draw obstacle
+    for obs in obstacles:
+        with new_draw():
+            strokeWeight(10)
+            stroke(0)
+            line(*obs)
 
     counter += 1
     # fitness test
     for arrow in population:
-        if not arrow.is_dead((w, h), target):
+        if not arrow.is_dead():
             arrow.move()
-            arrow.draw()
+
+        arrow.draw()
 
     if counter >= direction_amount or is_generation_over():
         generation += 1
@@ -71,14 +80,14 @@ def draw():
         print('calculating fitness')
         # calcualte fitness
         for arrow in population:
-            arrow.calculate_fitness(target)
-        
+            arrow.calculate_fitness()
+
         print('selecting')
 
         # selection
-        population = sorted(population, key=lambda item: item.fitness, reverse=True)
+        population = sorted(
+            population, key=lambda item: item.fitness, reverse=True)
         population = population[:int(population_size * selection_percentage)]
-
 
         print('Crossover')
 
@@ -99,16 +108,14 @@ def draw():
         for arrrow in population:
             for i in range(direction_amount):
                 if random.random() <= mutation_rate:
-                    arrrow.directions[i] = random.uniform(0, 2* pi)
+                    arrrow.directions[i] = random.uniform(0, 2 * pi)
 
         # reset arrows
         for arrow in population:
             arrow.reset()
 
 
-            
-
 # changes :
 #   lower angle movments
 #   set less moves and higher speed (maybe add acceleration?)
-#   
+#
