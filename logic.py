@@ -44,6 +44,37 @@ class Arrow:
         """angle in radians."""
         self.current_angle += angle
 
+    # from google
+    def _get_triangle_points(self):
+        L = self.r / 6
+        H = L / 2
+
+        startX, startY = self.starting_point
+        endX, endY = self.end_point
+        dX = endX - startX
+        dY = endY - startY
+
+        # vector length 
+        Len = (dX* dX + dY * dY) ** 0.5  # use Hypot if available
+
+        # normalized direction vector components
+        udX = dX / Len
+        udY = dY / Len
+
+        # perpendicular vector
+        perpX = -udY
+        perpY = udX
+
+        # points forming arrowhead
+        # with length L and half-width H
+
+        leftX = endX - L * udX + H * perpX
+        leftY = endY - L * udY + H * perpY
+
+        rightX = endX - L * udX - H * perpX
+        rightY = endY - L * udY - H * perpY
+        return self.end_point, (leftX, leftY), (rightX, rightY)
+
     def collision_with_walls(self):
         x, y = self.end_point
         return x < - w / 2 or x > w / 2 or y > h / 2 or y < -h / 2
@@ -107,18 +138,12 @@ class Arrow:
                 stroke(0, 255, 0)
 
             line(x, y, x_end, y_end)
-
-        # # lower point
-        # with new_draw():
-        #     strokeWeight(3)
-        #     stroke(255,0,0)
-        #     point(*self.starting_point)
-
-        # higher point
+        
         with new_draw():
-            strokeWeight(3)
-            stroke(255, 255, 0)
-            point(*self.end_point)
+            (a, b), (c, d), (e, f) = self._get_triangle_points()
+            fill(255, 0, 0)
+            triangle(a,b,c,d,e,f)
+
 
     def calculate_fitness(self):
         (x0, y0), (x1, y1) = self.target
