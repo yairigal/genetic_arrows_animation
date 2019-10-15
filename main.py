@@ -10,21 +10,38 @@ generation = 0
 
 # genetic alg parameters
 population_size = 1000
-direction_amount = 70
-mutation_rate = 0.05
+direction_amount = 300
+mutation_rate = 0.01
 selection_percentage = 0.01
 
 starting_poing = 0, 200
 target = [(-30, -h / 2 + 20), (30, -h / 2 + 20)]
-obstacles = [(-w/2, 100, 50, 100),
-             (-50, -50, w/2, -50),
-             (-w/2, -200, 50, -200)]
+# obstacles = [(-w/2, 100, 50, 100),
+#              (-50, -50, w/2, -50),
+#              (-w/2, -200, 50, -200)]
+
+
+def generate_obstacale(size=w/2):
+    x = random.uniform(-w/2, w/2)
+    y = random.uniform(-h/2, h/2)
+
+    x1 = random.uniform(x - size, x + size)
+    sub_eq = (size ** 2 - ((x - x1) * (x - x1))) ** 0.5
+    y1 = random.uniform(y - sub_eq, y + sub_eq)
+    return x, y, x1, y1
+
+
+def generate_terrain(max_obstacales=30):
+    amount = random.randint(1, max_obstacales)
+    return [generate_obstacale() for _ in range(amount)]
+
 
 
 def setup():
-    global population
+    global population, obstacles
     size(w, h)
     frameRate(60)
+    obstacles = generate_terrain()
 
     population = [Arrow(*starting_poing, obstacles=obstacles, target=target, length=direction_amount)
                   for _ in range(population_size)]
@@ -43,11 +60,11 @@ def crossover(father, mother):
 
     son = Arrow(*starting_poing, obstacles=obstacles,
                 target=target, length=direction_amount)
-    
-    new_directions = [(dir1 + dir2)/2 for dir1, dir2 in zip(father.directions, mother.directions)]
+
+    new_directions = [(dir1 + dir2)/2 for dir1,
+                      dir2 in zip(father.directions, mother.directions)]
     son.directions = new_directions
     return son
-
 
 
 def draw():
@@ -124,3 +141,4 @@ def draw():
 # changes :
 # draw trinagle above them
 # randomize terrain
+# make fitness function work with number of steps
