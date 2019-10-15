@@ -10,8 +10,8 @@ generation = 0
 
 # genetic alg parameters
 population_size = 1000
-direction_amount = 300
-mutation_rate = 0.01
+direction_amount = 70
+mutation_rate = 0.05
 selection_percentage = 0.01
 
 starting_poing = 0, 200
@@ -48,7 +48,20 @@ def crossover(father, mother):
     return son
 
 
+
+a = Arrow(0,0,[],[(10,10),(20,20)])
 def draw():
+    global counter
+    counter += 1
+    background(255)
+    translate(w / 2, h / 2)
+    if counter % 30 == 0:
+        a._change_direction(pi/4)
+    a._move()
+    a.draw()
+
+
+def draw1():
     global obstacles, counter, direction_amount, population_size, selection_percentage, generation, population
     background(255)
     translate(w / 2, h / 2)
