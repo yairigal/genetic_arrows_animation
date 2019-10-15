@@ -43,25 +43,14 @@ def crossover(father, mother):
 
     son = Arrow(*starting_poing, obstacles=obstacles,
                 target=target, length=direction_amount)
-    son.directions = father.directions[:direction_amount /
-                                       2] + mother.directions[direction_amount / 2:]
+    
+    new_directions = [(dir1 + dir2)/2 for dir1, dir2 in zip(father.directions, mother.directions)]
+    son.directions = new_directions
     return son
 
 
 
-a = Arrow(0,0,[],[(10,10),(20,20)])
 def draw():
-    global counter
-    counter += 1
-    background(255)
-    translate(w / 2, h / 2)
-    if counter % 30 == 0:
-        a._change_direction(pi/4)
-    a._move()
-    a.draw()
-
-
-def draw1():
     global obstacles, counter, direction_amount, population_size, selection_percentage, generation, population
     background(255)
     translate(w / 2, h / 2)
@@ -133,6 +122,5 @@ def draw1():
 
 
 # changes :
-#   lower angle movments
-#   set less moves and higher speed (maybe add acceleration?)
-#
+# draw trinagle above them
+# randomize terrain

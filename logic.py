@@ -36,7 +36,7 @@ class Arrow:
         self.obstacles = obstacles
         self.target = target
         self.reset()
-        self.speed = 2
+        self.speed = 20
         self.directions = [random.uniform(-pi/4, pi/4)
                            for _ in range(length)]
 
