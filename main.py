@@ -4,55 +4,48 @@ from math import pi
 import random
 from common import w, h, new_draw
 
-
 counter = 1
 generation = 0
 
 # genetic alg parameters
-population_size = 1000
-direction_amount = 300
-mutation_rate = 0.01
-selection_percentage = 0.01
+population_size = 500
+direction_amount = 500
+mutation_rate = 0.5
+selection_percentage = 0.05
 
-starting_poing = 0, 200
+starting_poing = 0, 400
 target = [(-30, -h / 2 + 20), (30, -h / 2 + 20)]
-# obstacles = [(-w/2, 100, 50, 100),
-#              (-50, -50, w/2, -50),
-#              (-w/2, -200, 50, -200)]
+# hard map
+# obstacles = [(100, 250, 100, 0),
+#              (100, 0, -100, 0),
+#              (-100, 0, -100, 250),
+#              (-100, 0, -100, -100),
+#              (-100, -100, -w/2, -100),
+#              (50, -100, 150, -100),
+#              (150, -100, 150, -50),
+#              (150, -50, w/2,-50)]
+
+#multiple way map
+obstacles = [(150, 0, -150, 0),
+             (-w/2, -100, -100, -100),
+             (100, -100, w/2, -100),
+             (-150, -200, 150, -200)]
 
 
-def generate_obstacale(size=w/2):
-    x = random.uniform(-w/2, w/2)
-    y = random.uniform(-h/2, h/2)
-
-    x1 = random.uniform(x - size, x + size)
-    sub_eq = (size ** 2 - ((x - x1) * (x - x1))) ** 0.5
-    y1 = random.uniform(y - sub_eq, y + sub_eq)
-    return x, y, x1, y1
+def generate_obstacale(y,r_length=150):
+    x = random.uniform(-w/2, w/2 - r_length)
+    return x, y, x + r_length, y
 
 
-def generate_terrain(max_obstacales=30):
-    amount = random.randint(1, max_obstacales)
-    return [generate_obstacale() for _ in range(amount)]
+def generate_terrain():
+    amount_in_row = 10
+    start_y = -250
 
-
-
-def setup():
-    global population, obstacles
-    size(w, h)
-    frameRate(60)
-    obstacles = generate_terrain()
-
-    population = [Arrow(*starting_poing, obstacles=obstacles, target=target, length=direction_amount)
-                  for _ in range(population_size)]
-
-
-def is_generation_over():
-    global population
-
-    finished = all(arrow.is_dead() for arrow in population)
-
-    return finished
+    lines = []
+    for i in range(6):
+        a = [generate_obstacale(start_y + 100*i, 40) for _ in range(amount_in_row)]
+        lines.extend(a)
+    return lines
 
 
 def crossover(father, mother):
@@ -67,8 +60,59 @@ def crossover(father, mother):
     return son
 
 
+
+def genetic_algorithm():
+    global mutation_rate, obstacles, counter, direction_amount, population_size, selection_percentage, generation, population
+    print('calculating fitness')
+    # calcualte fitness
+    for arrow in population:
+        arrow.calculate_fitness()
+
+    print('selecting')
+
+    # selection
+    population = sorted(
+        population, key=lambda item: item.fitness, reverse=True)
+    population = population[:int(population_size * selection_percentage)]
+
+    print('Crossover')
+
+    # crossover
+    new_pop = []
+    for _ in range(population_size - len(population)):
+        father = random.choice(population)
+        mother = random.choice(population)
+        descendent = crossover(father, mother)
+        new_pop.append(descendent)
+
+
+    print('mutation')
+
+    # mutation
+    for arrrow in new_pop:
+        for i in range(direction_amount):
+            if random.random() <= mutation_rate:
+                arrrow.directions[i] = random.uniform(-pi/4, pi/4)
+    
+    population = new_pop + population
+    del new_pop
+
+    # reset arrows
+    for arrow in population:
+        arrow.reset()
+
+
+def setup():
+    global population, obstacles
+    size(w, h)
+    frameRate(1000)
+    # obstacles = generate_terrain()
+    population = [Arrow(*starting_poing, obstacles=obstacles, target=target, length=direction_amount)
+                  for _ in range(population_size)]
+
+
 def draw():
-    global obstacles, counter, direction_amount, population_size, selection_percentage, generation, population
+    global mutation_rate, obstacles, counter, direction_amount, population_size, selection_percentage, generation, population
     background(255)
     translate(w / 2, h / 2)
 
@@ -87,6 +131,8 @@ def draw():
             line(*obs)
 
     counter += 1
+
+    print('fitness test')
     # fitness test
     for arrow in population:
         if not arrow.is_dead():
@@ -94,51 +140,18 @@ def draw():
 
         arrow.draw()
 
-    if counter >= direction_amount or is_generation_over():
+    if counter >= direction_amount or all(arrow.is_dead() for arrow in population):
         generation += 1
         print('generation #{} is over'.format(generation))
         # generation is over
         counter = 0
 
-        print('calculating fitness')
-        # calcualte fitness
-        for arrow in population:
-            arrow.calculate_fitness()
-
-        print('selecting')
-
-        # selection
-        population = sorted(
-            population, key=lambda item: item.fitness, reverse=True)
-        population = population[:int(population_size * selection_percentage)]
-
-        print('Crossover')
-
-        # crossover
-        new_pop = population[:]  # copy the population NOT by referance
-        for _ in range(population_size - len(population)):
-            father = random.choice(population)
-            mother = random.choice(population)
-            descendent = crossover(father, mother)
-            new_pop.append(descendent)
-
-        del population
-        population = new_pop
-
-        print('mutation')
-
-        # mutation
-        for arrrow in population:
-            for i in range(direction_amount):
-                if random.random() <= mutation_rate:
-                    arrrow.directions[i] = random.uniform(-pi/4, pi/4)
-
-        # reset arrows
-        for arrow in population:
-            arrow.reset()
+        genetic_algorithm()
+        
+    
+    
 
 
 # changes :
-# draw trinagle above them
-# randomize terrain
+# randomize terrain with boxes.
 # make fitness function work with number of steps

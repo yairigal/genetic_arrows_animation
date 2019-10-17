@@ -36,7 +36,7 @@ class Arrow:
         self.obstacles = obstacles
         self.target = target
         self.reset()
-        self.speed = 20
+        self.speed = 30
         self.directions = [random.uniform(-pi/4, pi/4)
                            for _ in range(length)]
 
@@ -103,8 +103,9 @@ class Arrow:
         # reset fitness
         self.fitness = 0
 
-        self.current_angle = (pi * 3 / 2) + (pi / 4)
-
+        self.current_angle = 3 * pi / 2
+        
+        self.steps = 0
     @property
     def end_point(self):
         x, y = self.starting_point
@@ -119,6 +120,7 @@ class Arrow:
         for direction in cycle(self.directions):
             self._change_direction(direction)
             self._move()
+            self.steps += 1
             yield
 
     def move(self):
@@ -161,7 +163,7 @@ class Arrow:
 
         # if achieved point get a bonus
         if self.achieved_target():
-            self.fitness = self.fitness ** 3
+            self.fitness = (max_distance ** 3) / self.steps
 
 
 if __name__ == "__main__":
