@@ -8,9 +8,9 @@ counter = 1
 generation = 0
 
 # genetic alg parameters
-population_size = 500
-direction_amount = 500
-mutation_rate = 0.5
+population_size = 1000
+direction_amount = 200
+mutation_rate = 0.05
 selection_percentage = 0.05
 
 starting_poing = 0, 400
@@ -92,7 +92,7 @@ def genetic_algorithm():
     for arrrow in new_pop:
         for i in range(direction_amount):
             if random.random() <= mutation_rate:
-                arrrow.directions[i] = random.uniform(-pi/4, pi/4)
+                arrrow.directions[i] += random.uniform(-pi/4, pi/4)
     
     population = new_pop + population
     del new_pop
@@ -132,7 +132,6 @@ def draw():
 
     counter += 1
 
-    print('fitness test')
     # fitness test
     for arrow in population:
         if not arrow.is_dead():
