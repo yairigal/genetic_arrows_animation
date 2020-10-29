@@ -1,4 +1,4 @@
-# genetic_arrows_animation
+# Genetic algorithm visualization
 Visualization of a genetic algorithm using the processing.py library
 
 ![Simulation](https://raw.githubusercontent.com/yairigal/genetic_arrows_animation/master/simul.gif)
